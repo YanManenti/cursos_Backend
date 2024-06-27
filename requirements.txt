@@ -66,14 +66,19 @@ pydantic==2.7.4
     # via
     #   -r requirements.in
     #   fastapi
+    #   pydantic-settings
 pydantic-core==2.18.4
     # via pydantic
+pydantic-settings==2.3.4
+    # via -r requirements.in
 pygments==2.18.0
     # via rich
 pymongo==4.8.0
     # via motor
 python-dotenv==1.0.1
-    # via uvicorn
+    # via
+    #   pydantic-settings
+    #   uvicorn
 python-multipart==0.0.9
     # via fastapi
 pyyaml==6.0.1
