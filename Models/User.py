@@ -6,7 +6,6 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from Database.database import PyObjectId
 
 
-
 class User(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
@@ -24,6 +23,7 @@ class User(BaseModel):
         }
     )
      
+
 class UpdateUser(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -39,6 +39,7 @@ class UpdateUser(BaseModel):
             }
         }
     )
+
 
 class UserCollection(BaseModel):
     users: List[User]

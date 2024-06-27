@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from Database.database import PyObjectId
 
+
 class InterestedContact(BaseModel):
     name: str = Field(...)
     email: EmailStr = Field(...)
@@ -17,6 +18,7 @@ class InterestedContact(BaseModel):
             }
         }
     )
+
 
 class Course(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
@@ -42,6 +44,7 @@ class Course(BaseModel):
         }
     )
 
+
 class UpdateCourse(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
@@ -64,6 +67,7 @@ class UpdateCourse(BaseModel):
             }
         }
     )
+
 
 class CourseCollection(BaseModel):
     courses: List[Course]
