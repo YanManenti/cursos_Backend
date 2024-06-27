@@ -1,14 +1,29 @@
 from typing import List, Optional
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from Database.database import PyObjectId
+
+class InterestedContact(BaseModel):
+    name: str = Field(...)
+    email: EmailStr = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
+            "example": {
+                "name": "John Doe",
+                "email": "jdoe@example.com"
+            }
+        }
+    )
 
 class Course(BaseModel):
-    id: Optional[ObjectId] = Field(alias="_id", default=None)
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     description: str = Field(...)
     price: float = Field(...)
-    is_active: bool = True
+    interested_list: List[InterestedContact] = []
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
@@ -17,7 +32,12 @@ class Course(BaseModel):
                 "name": "Python for Beginners",
                 "description": "A course for beginners in Python programming.",
                 "price": 100.0,
-                "is_active": True,
+                "interested_list": [
+                    {
+                        "name": "John Doe",
+                        "email": "jdoe@example.com"
+                    }
+                ]
             }
         }
     )
@@ -26,17 +46,21 @@ class UpdateCourse(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
-    is_active: Optional[bool] = None
+    interested_list: Optional[List[InterestedContact]] = None
     model_config = ConfigDict(
-        arbitrary_types_allowed=False,
+        arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
-        validate_default=True,
         json_schema_extra={
             "example": {
                 "name": "Python for Beginners",
                 "description": "A course for beginners in Python programming.",
                 "price": 100.0,
-                "is_active": True,
+                "interested_list": [
+                    {
+                        "name": "John Doe",
+                        "email": "jdoe@example.com"
+                    }
+                ]
             }
         }
     )

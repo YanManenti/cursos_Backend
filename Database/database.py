@@ -1,7 +1,11 @@
 from functools import lru_cache
+from typing import Annotated
 import motor.motor_asyncio
+from pydantic import BeforeValidator
 
 from config import Settings
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 @lru_cache
 def get_settings():

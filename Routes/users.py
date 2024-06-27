@@ -11,6 +11,7 @@ router = APIRouter(
     tags=["users"],
 )
 
+
 # Gets all users from the database and returns them as a list
 @router.get("/",
             response_model=UserCollection,
@@ -26,6 +27,7 @@ async def read_all_users():
 
     return UserCollection(users=data)
 
+
 # Gets a user by their Id
 @router.get("/{user_id}",
             response_model=User,
@@ -38,6 +40,7 @@ async def read_user(user_id: str):
         return HTTPException(status_code=404, detail="User not found")
     
     return user
+
 
 # Creates a new user
 @router.post("/",
@@ -56,6 +59,7 @@ async def create_user(user: User = Body(...)):
         return HTTPException(status_code=404, detail="Error finding created user")
     
     return createdUser
+
 
 # Updates a user by their Id
 @router.put("/{user_id}",
@@ -77,6 +81,7 @@ async def update_user(user_id: str, user: UpdateUser = Body(...)):
         return HTTPException(status_code=404, detail=f"User {user_id} not found after update")
     
     return updatedUser
+
 
 # Deletes a user by their Id
 @router.delete("/{user_id}")
