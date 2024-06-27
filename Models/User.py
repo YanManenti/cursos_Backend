@@ -18,7 +18,7 @@ class User(BaseModel):
             "example": {
                 "name": "John Doe",
                 "email": "jdoe@example.com",
-                "password": "031edd7d41651593c5fe5c006fa5752b37fddff7bc4e843aa6af0c950f4b9406",
+                "password": "1234",
             }
         }
     )
@@ -35,7 +35,7 @@ class UpdateUser(BaseModel):
             "example": {
                 "name": "John Doe",
                 "email": "jdoe@example.com",
-                "password": "031edd7d41651593c5fe5c006fa5752b37fddff7bc4e843aa6af0c950f4b9406",
+                "password": "1234",
             }
         }
     )

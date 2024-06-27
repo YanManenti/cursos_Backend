@@ -1,3 +1,4 @@
+import hashlib
 from http import HTTPStatus
 from bson import ObjectId
 from fastapi import APIRouter, Body, HTTPException
@@ -50,6 +51,8 @@ async def read_user(user_id: str):
              )
 async def create_user(user: User = Body(...)):
 
+    user.password = hashlib.sha256(user.password.encode()).hexdigest()
+
     newUser = await users_collection.insert_one(user.model_dump(by_alias=True, exclude=["id"]))
     if(newUser is None):
         return HTTPException(status_code=404, detail="Error creating user")
@@ -71,6 +74,9 @@ async def update_user(user_id: str, user: UpdateUser = Body(...)):
     user={
         key: value for key, value in user.model_dump(by_alias=True).items() if value is not None
     }
+
+    if("password" in user):
+        user["password"] = hashlib.sha256(user["password"].encode()).hexdigest()
 
     updatedUser = await users_collection.find_one_and_update({"_id": ObjectId(user_id)}, {"$set": user}, return_document=ReturnDocument.AFTER)
     if(updatedUser is None):
