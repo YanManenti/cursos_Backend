@@ -3,7 +3,7 @@ from typing import List, Optional
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from Database.database import PyObjectId
+from app.Database.database import PyObjectId
 
 
 class User(BaseModel):

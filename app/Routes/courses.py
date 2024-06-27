@@ -3,8 +3,8 @@ from bson import ObjectId
 from fastapi import APIRouter, Body, HTTPException
 from pymongo import ReturnDocument
 
-from Database.database import courses_collection
-from Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
+from app.Database.database import courses_collection
+from app.Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
 
 
 router = APIRouter(

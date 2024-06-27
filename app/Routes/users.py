@@ -3,8 +3,8 @@ from http import HTTPStatus
 from bson import ObjectId
 from fastapi import APIRouter, Body, HTTPException
 from pymongo import ReturnDocument
-from Database.database import users_collection
-from Models.User import UpdateUser, User, UserCollection, UserWithPassword
+from app.Database.database import users_collection
+from app.Models.User import UpdateUser, User, UserCollection, UserWithPassword
 
 
 router = APIRouter(

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from Routes import courses, users
+from app.Routes import courses, users
 
 
 app = FastAPI()
