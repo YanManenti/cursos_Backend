@@ -11,8 +11,7 @@ class Course(BaseModel):
     is_active: bool = True
     model_config = ConfigDict(
         populate_by_name=True,
-        arbitrary_types_allowed=False,
-        validate_all=True,
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "name": "Python for Beginners",
@@ -31,7 +30,7 @@ class UpdateCourse(BaseModel):
     model_config = ConfigDict(
         arbitrary_types_allowed=False,
         json_encoders={ObjectId: str},
-        validate_all=True,
+        validate_default=True,
         json_schema_extra={
             "example": {
                 "name": "Python for Beginners",

@@ -1,18 +1,19 @@
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, EmailStr, Field
+
+PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
 class User(BaseModel):
-    id: Optional[ObjectId] = Field(alias="_id", default=None)
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     email: EmailStr = Field(...)
     password: str = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
-        arbitrary_types_allowed=False,
-        validate_all=True,
+        arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
                 "name": "John Doe",
@@ -27,9 +28,8 @@ class UpdateUser(BaseModel):
     email: Optional[EmailStr] = None
     password: Optional[str] = None
     model_config = ConfigDict(
-        arbitrary_types_allowed=False,
+        arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
-        validate_all=True,
         json_schema_extra={
             "example": {
                 "name": "John Doe",
