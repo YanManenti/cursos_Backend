@@ -4,7 +4,7 @@ from bson import ObjectId
 from fastapi import APIRouter, Body, HTTPException
 from pymongo import ReturnDocument
 from Database.database import users_collection
-from Models.User import UpdateUser, User, UserCollection
+from Models.User import UpdateUser, User, UserCollection, UserWithPassword
 
 
 router = APIRouter(
@@ -49,7 +49,7 @@ async def read_user(user_id: str):
              status_code=HTTPStatus.CREATED,
              response_model_by_alias=False
              )
-async def create_user(user: User = Body(...)):
+async def create_user(user: UserWithPassword = Body(...)):
 
     user.password = hashlib.sha256(user.password.encode()).hexdigest()
 

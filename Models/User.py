@@ -10,6 +10,18 @@ class User(BaseModel):
     id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     email: EmailStr = Field(...)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
+            "example": {
+                "name": "John Doe",
+                "email": "jdoe@example.com",
+            }
+        }
+    )
+
+class UserWithPassword(User):
     password: str = Field(...)
     model_config = ConfigDict(
         populate_by_name=True,
