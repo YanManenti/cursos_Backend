@@ -1,11 +1,12 @@
 import hashlib
 from http import HTTPStatus
 from bson import ObjectId
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, Form, HTTPException
 from pymongo import ReturnDocument
+
 from app.Database.database import users_collection
 from app.Models.User import UpdateUser, User, UserCollection, UserWithPassword
-
+from app.Images.default import defaultUser
 
 router = APIRouter(
     prefix="/api/users",
@@ -52,6 +53,9 @@ async def read_user(user_id: str):
 async def create_user(user: UserWithPassword = Body(...)):
 
     user.password = hashlib.sha256(user.password.encode()).hexdigest()
+
+    if(user.avatar == "" or user.avatar is None):
+        user.avatar = defaultUser
 
     newUser = await users_collection.insert_one(user.model_dump(by_alias=True, exclude=["id"]))
     if(newUser is None):

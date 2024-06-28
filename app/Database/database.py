@@ -4,7 +4,7 @@ from typing import Annotated
 import motor.motor_asyncio
 from pydantic import BeforeValidator
 
-# from app.config import Settings
+# from config import Settings
 
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
@@ -15,8 +15,8 @@ PyObjectId = Annotated[str, BeforeValidator(str)]
 
 # settings = get_settings()
 
-
 client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGODB_URL"))
+# client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGODB_URL)
 db = client["imteste"]
 
 

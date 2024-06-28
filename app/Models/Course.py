@@ -3,6 +3,7 @@ from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.Database.database import PyObjectId
+from app.Images.default import defaultCourse
 
 
 class InterestedContact(BaseModel):
@@ -25,6 +26,7 @@ class Course(BaseModel):
     name: str = Field(...)
     description: str = Field(...)
     price: float = Field(...)
+    background: str = Field(default=defaultCourse)
     interested_list: List[InterestedContact] = []
     model_config = ConfigDict(
         populate_by_name=True,
@@ -34,6 +36,7 @@ class Course(BaseModel):
                 "name": "Python for Beginners",
                 "description": "A course for beginners in Python programming.",
                 "price": 100.0,
+                "background": "839456ynq3...",
                 "interested_list": [
                     {
                         "name": "John Doe",
@@ -49,6 +52,7 @@ class UpdateCourse(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
+    background: Optional[str] = None
     interested_list: Optional[List[InterestedContact]] = None
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -58,6 +62,7 @@ class UpdateCourse(BaseModel):
                 "name": "Python for Beginners",
                 "description": "A course for beginners in Python programming.",
                 "price": 100.0,
+                "background": "839456ynq3...",
                 "interested_list": [
                     {
                         "name": "John Doe",

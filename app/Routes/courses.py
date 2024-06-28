@@ -5,7 +5,7 @@ from pymongo import ReturnDocument
 
 from app.Database.database import courses_collection
 from app.Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
-
+from app.Images.default import defaultCourse
 
 router = APIRouter(
     prefix="/api/courses",
@@ -50,6 +50,9 @@ async def read_course(course_id: str):
              response_model_by_alias = False
              )
 async def create_course(course: Course = Body(...)):
+
+    if(course.background == "" or course.background is None):
+        course.background = defaultCourse
     
     newCourse = await courses_collection.insert_one(course.model_dump(by_alias=True, exclude=["id"]))
     if(newCourse is None):
