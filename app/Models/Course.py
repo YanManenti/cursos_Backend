@@ -26,6 +26,8 @@ class Course(BaseModel):
     name: str = Field(...)
     description: str = Field(...)
     price: float = Field(...)
+    score: float = Field(default=0.0)
+    reviews: int = Field(default=0)
     background: str = Field(default=defaultCourse)
     interested_list: List[InterestedContact] = []
     model_config = ConfigDict(
@@ -36,6 +38,8 @@ class Course(BaseModel):
                 "name": "Python for Beginners",
                 "description": "A course for beginners in Python programming.",
                 "price": 100.0,
+                "score": 4.5,
+                "reviews": 10,
                 "background": "839456ynq3...",
                 "interested_list": [
                     {
@@ -52,6 +56,8 @@ class UpdateCourse(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
+    score: Optional[float] = None
+    reviews: Optional[int] = None
     background: Optional[str] = None
     interested_list: Optional[List[InterestedContact]] = None
     model_config = ConfigDict(
@@ -62,6 +68,8 @@ class UpdateCourse(BaseModel):
                 "name": "Python for Beginners",
                 "description": "A course for beginners in Python programming.",
                 "price": 100.0,
+                "score": 4.5,
+                "reviews": 10,
                 "background": "839456ynq3...",
                 "interested_list": [
                     {

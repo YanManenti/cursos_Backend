@@ -13,6 +13,18 @@ router = APIRouter(
     tags=["users"],
 )
 
+# Login route
+@router.post("/login",
+             response_model=User,
+             response_model_by_alias=False)
+async def login(email: str = Form(...), password: str = Form(...)):
+    password = hashlib.sha256(password.encode()).hexdigest()
+    user = await users_collection.find_one({"email": email, "password": password})
+    if(user is None):
+        return HTTPException(status_code=404, detail="User not found")
+    
+    return user
+
 
 # Gets all users from the database and returns them as a list
 @router.get("/",

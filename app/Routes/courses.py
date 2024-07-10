@@ -28,6 +28,41 @@ async def read_all_courses():
 
     return CourseCollection(courses=data)
 
+#Gets list of courses based on the search query
+@router.get("/search?order_by={order_by}&namefilter={namefilter}&page={page}&limit={limit}",
+            response_model = CourseCollection,
+            response_model_by_alias = False
+            )
+async def search_courses(order_by: str, namefilter: str, page: int, limit: int):
+    data=[]
+    field={
+        'precoCrescente': 'price',
+        'precoDecrescente': 'price',
+        'avaliacaoCrescente': 'score',
+        'avaliacaoDecrescente': 'score',
+        'reviewCrescente': 'reviews',
+        'reviewDecrescente': 'reviews',
+        'ordemAlfabetica': 'name',
+    }
+    order={
+        'precoCrescente': 1,
+        'precoDecrescente': -1,
+        'avaliacaoCrescente': 1,
+        'avaliacaoDecrescente': -1,
+        'reviewCrescente': 1,
+        'reviewDecrescente': -1,
+        'ordemAlfabetica': 1,
+    }
+    if namefilter == "":
+        cursor = courses_collection.find().sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
+    else:
+        cursor = courses_collection.find({"name": {"$regex": namefilter}}).sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
+    
+    for document in await cursor.to_list(length=limit):
+        data.append(document)
+    
+    return CourseCollection(courses=data)
+
 
 # Gets a course by their Id
 @router.get("/{course_id}",

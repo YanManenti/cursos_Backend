@@ -11,7 +11,7 @@ anyio==4.4.0
     #   httpx
     #   starlette
     #   watchfiles
-certifi==2024.6.2
+certifi==2024.7.4
     # via
     #   httpcore
     #   httpx
@@ -32,9 +32,13 @@ email-validator==2.2.0
     #   fastapi
     #   pydantic
 fastapi==0.111.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   fastapi-jwt-auth
 fastapi-cli==0.0.4
     # via fastapi
+fastapi-jwt-auth==0.5.0
+    # via -r requirements.in
 h11==0.14.0
     # via
     #   httpcore
@@ -58,21 +62,23 @@ markupsafe==2.1.5
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-motor==3.5.0
+motor==3.5.1
     # via -r requirements.in
-orjson==3.10.5
+orjson==3.10.6
     # via fastapi
-pydantic==2.7.4
+pydantic==2.8.2
     # via
     #   -r requirements.in
     #   fastapi
     #   pydantic-settings
-pydantic-core==2.18.4
+pydantic-core==2.20.1
     # via pydantic
 pydantic-settings==2.3.4
     # via -r requirements.in
 pygments==2.18.0
     # via rich
+pyjwt==1.7.1
+    # via fastapi-jwt-auth
 pymongo==4.8.0
     # via motor
 python-dotenv==1.0.1
