@@ -1,17 +1,25 @@
+import asyncio
 from http import HTTPStatus
+from typing import Optional
 from bson import ObjectId
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Security
+from fastapi_jwt import JwtAuthorizationCredentials
 from pymongo import ReturnDocument
 
-from app.Database.database import courses_collection
-from app.Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
-from app.Images.default import defaultCourse
+# from app.Database.database import courses_collection
+# from app.Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
+# from app.Images.default import defaultCourse
+
+from Database.database import courses_collection
+from Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
+from Images.default import defaultCourse
+
+from Routes.users import access_security
 
 router = APIRouter(
     prefix="/api/courses",
     tags=["courses"],
 )
-
 
 # Gets all courses from the database and returns them as a list
 @router.get("/",
@@ -26,15 +34,16 @@ async def read_all_courses():
     for document in await cursor.to_list(length=100):
         data.append(document)
 
-    return CourseCollection(courses=data)
+    return CourseCollection(courses=data, total=len(data))
 
 #Gets list of courses based on the search query
-@router.get("/search?order_by={order_by}&namefilter={namefilter}&page={page}&limit={limit}",
+@router.get("/search/",
             response_model = CourseCollection,
             response_model_by_alias = False
             )
-async def search_courses(order_by: str, namefilter: str, page: int, limit: int):
+async def search_courses(order_by: str, page: int, limit: int, namefilter: Optional[str] = ""):
     data=[]
+    total=0
     field={
         'precoCrescente': 'price',
         'precoDecrescente': 'price',
@@ -54,14 +63,16 @@ async def search_courses(order_by: str, namefilter: str, page: int, limit: int):
         'ordemAlfabetica': 1,
     }
     if namefilter == "":
+        total = await courses_collection.count_documents({})
         cursor = courses_collection.find().sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
     else:
+        total = await courses_collection.count_documents({"name": {"$regex": namefilter}})
         cursor = courses_collection.find({"name": {"$regex": namefilter}}).sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
     
     for document in await cursor.to_list(length=limit):
         data.append(document)
     
-    return CourseCollection(courses=data)
+    return CourseCollection(courses=data, total=total)
 
 
 # Gets a course by their Id
@@ -128,19 +139,20 @@ async def update_course(course_id: str, course: UpdateCourse = Body(...)):
               response_model = Course,
               response_model_by_alias = False
               )
-async def patch_course(course_id: str, interested_contact: InterestedContact = Body(...)):
+async def patch_course(course_id: str, credentials: JwtAuthorizationCredentials = Security(access_security)):
 
     # Iterates through the received interested_contact dictionary and removes any None values
-    interested_contact={
-        key: value for key, value in interested_contact.model_dump(by_alias=True).items() if value is not None
-    }
+    # interested_contact={
+    #     key: value for key, value in interested_contact.model_dump(by_alias=True).items() if value is not None
+    # }
+    interested_contact = {"name": credentials["name"], "email": credentials["email"]}
     
     courseInDb = await courses_collection.find_one({"_id": ObjectId(course_id)})
     if(courseInDb is None):
         return HTTPException(status_code=404, detail="Course not found")
     
     currentInterestedList = courseInDb.get("interested_list") or []
-    if(currentInterestedList.count(interested_contact) > 0):
+    if(currentInterestedList.count() > 0):
         return HTTPException(status_code=400, detail="Contact already in interested list")
 
     currentInterestedList.append(interested_contact)
@@ -190,3 +202,4 @@ async def delete_course(course_id: str):
     
     return {"detail": f"{deleteResult.deleted_count} course(s) deleted"}
 
+    

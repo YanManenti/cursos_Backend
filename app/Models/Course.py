@@ -2,8 +2,11 @@ from typing import List, Optional
 from bson import ObjectId
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.Database.database import PyObjectId
-from app.Images.default import defaultCourse
+# from app.Database.database import PyObjectId
+# from app.Images.default import defaultCourse
+
+from Database.database import PyObjectId
+from Images.default import defaultCourse
 
 
 class InterestedContact(BaseModel):
@@ -84,4 +87,5 @@ class UpdateCourse(BaseModel):
 
 class CourseCollection(BaseModel):
     courses: List[Course]
+    total: int
     

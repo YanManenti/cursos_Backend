@@ -1,16 +1,41 @@
 import hashlib
 from http import HTTPStatus
 from bson import ObjectId
-from fastapi import APIRouter, Body, Form, HTTPException
+from fastapi import APIRouter, Body, Depends, Form, HTTPException, Security
 from pymongo import ReturnDocument
 
-from app.Database.database import users_collection
-from app.Models.User import UpdateUser, User, UserCollection, UserWithPassword
-from app.Images.default import defaultUser
+# from app.Database.database import users_collection
+# from app.Models.User import UpdateUser, User, UserCollection, UserWithPassword
+# from app.Images.default import defaultUser
+
+from Database.database import users_collection
+from Models.User import UpdateUser, User, UserCollection, UserWithPassword
+from Images.default import defaultUser
+
+from fastapi_jwt import (
+    JwtAccessBearerCookie,
+    JwtAuthorizationCredentials,
+    JwtRefreshBearer,
+)
+from datetime import timedelta
+
+
 
 router = APIRouter(
     prefix="/api/users",
     tags=["users"],
+)
+
+# Read access token from bearer header and cookie (bearer priority)
+access_security = JwtAccessBearerCookie(
+    secret_key="secret_key",
+    auto_error=True,
+    access_expires_delta=timedelta(hours=1)  # change access token validation timedelta
+)
+# Read refresh token from bearer header only
+refresh_security = JwtRefreshBearer(
+    secret_key="secret_key", 
+    auto_error=True  # automatically raise HTTPException: HTTP_401_UNAUTHORIZED 
 )
 
 # Login route
@@ -23,8 +48,26 @@ async def login(email: str = Form(...), password: str = Form(...)):
     if(user is None):
         return HTTPException(status_code=404, detail="User not found")
     
-    return user
+    # Create new access/refresh tokens pair
+    access_token = access_security.create_access_token(subject=user)
+    refresh_token = refresh_security.create_refresh_token(subject=user)
 
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+@router.post('/refresh')
+def refresh(
+        credentials: JwtAuthorizationCredentials = Security(refresh_security)
+):
+    """
+    The jwt_refresh_token_required() function insures a valid refresh
+    token is present in the request before running any code below that function.
+    we can use the get_jwt_subject() function to get the subject of the refresh
+    token, and use the create_access_token() function again to make a new access token
+    """
+    access_token = access_security.create_access_token(subject=credentials.subject)
+    refresh_token = refresh_security.create_refresh_token(subject=credentials.subject, expires_delta=timedelta(days=2))
+
+    return {"access_token": access_token, "refresh_token": refresh_token}
 
 # Gets all users from the database and returns them as a list
 @router.get("/",
@@ -47,13 +90,14 @@ async def read_all_users():
             response_model=User,
             response_model_by_alias=False
             )
-async def read_user(user_id: str):
+async def read_user(credentials: JwtAuthorizationCredentials = Security(access_security)):
 
-    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    user = await users_collection.find_one({"name": credentials["name"]})
     if(user is None):
         return HTTPException(status_code=404, detail="User not found")
-    
-    return user
+
+    # now we can access Credentials object
+    return {"credentials": credentials}
 
 
 # Creates a new user
