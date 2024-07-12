@@ -40,17 +40,22 @@ refresh_security = JwtRefreshBearer(
 
 # Login route
 @router.post("/login",
-             response_model=User,
              response_model_by_alias=False)
-async def login(email: str = Form(...), password: str = Form(...)):
+async def login(email: str = Body(...), password: str = Body(...)):
     password = hashlib.sha256(password.encode()).hexdigest()
     user = await users_collection.find_one({"email": email, "password": password})
     if(user is None):
         return HTTPException(status_code=404, detail="User not found")
     
+    subject = {
+        "name": user["name"],
+        "email": user["email"],
+        "avatar": user["avatar"]
+    }
+
     # Create new access/refresh tokens pair
-    access_token = access_security.create_access_token(subject=user)
-    refresh_token = refresh_security.create_refresh_token(subject=user)
+    access_token = access_security.create_access_token(subject=subject)
+    refresh_token = refresh_security.create_refresh_token(subject=subject)
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
