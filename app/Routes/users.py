@@ -30,7 +30,7 @@ router = APIRouter(
 access_security = JwtAccessBearerCookie(
     secret_key="secret_key",
     auto_error=True,
-    access_expires_delta=timedelta(hours=1)  # change access token validation timedelta
+    access_expires_delta=timedelta(hours=24)  # change access token validation timedelta
 )
 # Read refresh token from bearer header only
 refresh_security = JwtRefreshBearer(
@@ -48,9 +48,10 @@ async def login(email: str = Body(...), password: str = Body(...)):
         return HTTPException(status_code=404, detail="User not found")
     
     subject = {
+        "id": str(user["_id"]),
         "name": user["name"],
         "email": user["email"],
-        "avatar": user["avatar"]
+        # "avatar": user["avatar"]
     }
 
     # Create new access/refresh tokens pair
@@ -91,18 +92,29 @@ async def read_all_users():
 
 
 # Gets a user by their Id
-@router.get("/{user_id}",
-            response_model=User,
+@router.get("/avatar/{user_id}",
             response_model_by_alias=False
             )
-async def read_user(credentials: JwtAuthorizationCredentials = Security(access_security)):
+async def read_user(user_id: str):
 
-    user = await users_collection.find_one({"name": credentials["name"]})
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
     if(user is None):
         return HTTPException(status_code=404, detail="User not found")
 
     # now we can access Credentials object
-    return {"credentials": credentials}
+    return {"avatar": user["avatar"]}
+
+# Gets the user based on the access token
+@router.get("/me",
+            response_model_by_alias=False
+            )
+async def read_user(credentials: JwtAuthorizationCredentials = Security(access_security)):
+
+    return {
+                "id": credentials["id"],
+                "name": credentials["name"],
+                "email": credentials["email"]
+            }
 
 
 # Creates a new user

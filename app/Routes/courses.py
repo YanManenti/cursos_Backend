@@ -1,7 +1,7 @@
 import asyncio
 from http import HTTPStatus
 from typing import Optional
-from bson import ObjectId
+from bson import ObjectId, Regex
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_jwt import JwtAuthorizationCredentials
 from pymongo import ReturnDocument
@@ -62,12 +62,12 @@ async def search_courses(order_by: str, page: int, limit: int, namefilter: Optio
         'reviewDecrescente': -1,
         'ordemAlfabetica': 1,
     }
-    if namefilter == "":
+    if namefilter == "" or namefilter is None:
         total = await courses_collection.count_documents({})
         cursor = courses_collection.find().sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
     else:
-        total = await courses_collection.count_documents({"name": {"$regex": namefilter}})
-        cursor = courses_collection.find({"name": {"$regex": namefilter}}).sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
+        total = await courses_collection.count_documents({"name": {"$regex": namefilter, "$options": 'si'}})
+        cursor = courses_collection.find({"name": {"$regex": namefilter, "$options": 'si'}}).sort(field.get(order_by), order.get(order_by)).skip(page*limit).limit(limit)
     
     for document in await cursor.to_list(length=limit):
         data.append(document)
@@ -152,8 +152,8 @@ async def patch_course(course_id: str, credentials: JwtAuthorizationCredentials 
         return HTTPException(status_code=404, detail="Course not found")
     
     currentInterestedList = courseInDb.get("interested_list") or []
-    if(currentInterestedList.count() > 0):
-        return HTTPException(status_code=400, detail="Contact already in interested list")
+    if interested_contact in currentInterestedList:
+        return HTTPException(status_code=404, detail="Contact already in interest list")
 
     currentInterestedList.append(interested_contact)
     updatedCourse = await courses_collection.find_one_and_update({"_id": ObjectId(course_id)}, {"$set": {"interested_list": currentInterestedList}}, return_document=ReturnDocument.AFTER)
