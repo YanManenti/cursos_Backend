@@ -45,13 +45,12 @@ async def login(email: str = Body(...), password: str = Body(...)):
     password = hashlib.sha256(password.encode()).hexdigest()
     user = await users_collection.find_one({"email": email, "password": password})
     if(user is None):
-        return HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     
     subject = {
         "id": str(user["_id"]),
         "name": user["name"],
         "email": user["email"],
-        # "avatar": user["avatar"]
     }
 
     # Create new access/refresh tokens pair
@@ -60,22 +59,22 @@ async def login(email: str = Body(...), password: str = Body(...)):
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
+
+# Refresh route to get new access token
+
 @router.post('/refresh')
 def refresh(
         credentials: JwtAuthorizationCredentials = Security(refresh_security)
 ):
-    """
-    The jwt_refresh_token_required() function insures a valid refresh
-    token is present in the request before running any code below that function.
-    we can use the get_jwt_subject() function to get the subject of the refresh
-    token, and use the create_access_token() function again to make a new access token
-    """
+    
     access_token = access_security.create_access_token(subject=credentials.subject)
     refresh_token = refresh_security.create_refresh_token(subject=credentials.subject, expires_delta=timedelta(days=2))
 
     return {"access_token": access_token, "refresh_token": refresh_token}
 
+
 # Gets all users from the database and returns them as a list
+
 @router.get("/",
             response_model=UserCollection,
             response_model_by_alias=False
@@ -99,7 +98,7 @@ async def read_user(user_id: str):
 
     user = await users_collection.find_one({"_id": ObjectId(user_id)})
     if(user is None):
-        return HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
 
     # now we can access Credentials object
     return {"avatar": user["avatar"]}
@@ -109,13 +108,18 @@ async def read_user(user_id: str):
             response_model_by_alias=False
             )
 async def read_user(credentials: JwtAuthorizationCredentials = Security(access_security)):
+    id = credentials["id"]
+    user = await users_collection.find_one({"_id": ObjectId(id)})
+    if(user is None):
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    subject = {
+        "id": str(user["_id"]),
+        "name": user["name"],
+        "email": user["email"],
+    }
 
-    return {
-                "id": credentials["id"],
-                "name": credentials["name"],
-                "email": credentials["email"]
-            }
-
+    return {"subject": subject}
 
 # Creates a new user
 @router.post("/",
@@ -130,13 +134,21 @@ async def create_user(user: UserWithPassword = Body(...)):
     if(user.avatar == "" or user.avatar is None):
         user.avatar = defaultUser
 
+    sameEmailUser = await users_collection.find_one({"email": user.email})
+    if(sameEmailUser is not None):
+        raise HTTPException(status_code=400, detail="Usuário com este email já existe")
+    
+    sameNameUser = await users_collection.find_one({"name": user.name})
+    if(sameNameUser is not None):
+        raise HTTPException(status_code=400, detail="Usuário com este nome já existe")
+
     newUser = await users_collection.insert_one(user.model_dump(by_alias=True, exclude=["id"]))
     if(newUser is None):
-        return HTTPException(status_code=404, detail="Error creating user")
+        raise HTTPException(status_code=500, detail="Erro ao criar usuário")
     
     createdUser = await users_collection.find_one({"_id": newUser.inserted_id})
     if(createdUser is None):
-        return HTTPException(status_code=404, detail="Error finding created user")
+        raise HTTPException(status_code=500, detail="Erro ao encontrar usuário criado")
     
     return createdUser
 
@@ -157,11 +169,11 @@ async def update_user(user_id: str, user: UpdateUser = Body(...)):
 
     updatedUser = await users_collection.find_one_and_update({"_id": ObjectId(user_id)}, {"$set": user}, return_document=ReturnDocument.AFTER)
     if(updatedUser is None):
-        return HTTPException(status_code=404, detail=f"User {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
     
     updatedUser = await users_collection.find_one({"_id": ObjectId(user_id)})
     if(updatedUser is None):
-        return HTTPException(status_code=404, detail=f"User {user_id} not found after update")
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found after update")
     
     return updatedUser
 
@@ -172,6 +184,6 @@ async def delete_user(user_id: str):
 
     deleteResult = await users_collection.delete_one({"_id": ObjectId(user_id)})
     if(deleteResult.deleted_count == 0):
-        return HTTPException(status_code=404, detail=f"User {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User {user_id} not found")
     
     return {"detail": f"{deleteResult.deleted_count} user(s) deleted"}
