@@ -1,4 +1,3 @@
-import asyncio
 from http import HTTPStatus
 from typing import Optional
 from bson import ObjectId, Regex
@@ -6,15 +5,15 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from fastapi_jwt import JwtAuthorizationCredentials
 from pymongo import ReturnDocument
 
-# from app.Database.database import courses_collection
-# from app.Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
-# from app.Images.default import defaultCourse
+from app.Database.database import courses_collection
+from app.Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
+from app.Images.default import defaultCourse
 
-from Database.database import courses_collection
-from Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
-from Images.default import defaultCourse
+# from Database.database import courses_collection
+# from Models.Course import Course, InterestedContact, UpdateCourse, CourseCollection
+# from Images.default import defaultCourse
 
-from Routes.users import access_security
+from app.Routes.users import access_security
 
 router = APIRouter(
     prefix="/api/courses",
@@ -52,6 +51,7 @@ async def search_courses(order_by: str, page: int, limit: int, namefilter: Optio
         'reviewCrescente': 'reviews',
         'reviewDecrescente': 'reviews',
         'ordemAlfabetica': 'name',
+        'ordemAlfabeticaReversa': 'name'
     }
     order={
         'precoCrescente': 1,
@@ -61,6 +61,7 @@ async def search_courses(order_by: str, page: int, limit: int, namefilter: Optio
         'reviewCrescente': 1,
         'reviewDecrescente': -1,
         'ordemAlfabetica': 1,
+        'ordemAlfabeticaReversa': -1
     }
     if namefilter == "" or namefilter is None:
         total = await courses_collection.count_documents({})

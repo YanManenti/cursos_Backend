@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-# from app.Routes import courses, users
-from Routes import courses, users
+from app.Routes import courses, users
+# from Routes import courses, users
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()

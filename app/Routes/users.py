@@ -4,13 +4,13 @@ from bson import ObjectId
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Security
 from pymongo import ReturnDocument
 
-# from app.Database.database import users_collection
-# from app.Models.User import UpdateUser, User, UserCollection, UserWithPassword
-# from app.Images.default import defaultUser
+from app.Database.database import users_collection
+from app.Models.User import UpdateUser, User, UserCollection, UserWithPassword
+from app.Images.default import defaultUser
 
-from Database.database import users_collection
-from Models.User import UpdateUser, User, UserCollection, UserWithPassword
-from Images.default import defaultUser
+# from Database.database import users_collection
+# from Models.User import UpdateUser, User, UserCollection, UserWithPassword
+# from Images.default import defaultUser
 
 from fastapi_jwt import (
     JwtAccessBearerCookie,
@@ -133,14 +133,14 @@ async def create_user(user: UserWithPassword = Body(...)):
 
     if(user.avatar == "" or user.avatar is None):
         user.avatar = defaultUser
-
-    sameEmailUser = await users_collection.find_one({"email": user.email})
-    if(sameEmailUser is not None):
-        raise HTTPException(status_code=400, detail="Usuário com este email já existe")
     
     sameNameUser = await users_collection.find_one({"name": user.name})
     if(sameNameUser is not None):
         raise HTTPException(status_code=400, detail="Usuário com este nome já existe")
+    
+    sameEmailUser = await users_collection.find_one({"email": user.email})
+    if(sameEmailUser is not None):
+        raise HTTPException(status_code=400, detail="Usuário com este email já existe")
 
     newUser = await users_collection.insert_one(user.model_dump(by_alias=True, exclude=["id"]))
     if(newUser is None):
