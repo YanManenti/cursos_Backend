@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 
 from app.Routes import courses, users
@@ -10,6 +11,7 @@ origins = [
     "http://localhost:3000",
     "http://localhost:3000/",
     "http://localhost:8080",
+    os.getenv('FRONTEND_URL')
 ]
 
 app.add_middleware(
