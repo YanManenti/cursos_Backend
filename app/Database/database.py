@@ -1,4 +1,4 @@
-from functools import lru_cache
+# from functools import lru_cache
 import os
 from typing import Annotated
 import motor.motor_asyncio
@@ -15,9 +15,9 @@ PyObjectId = Annotated[str, BeforeValidator(str)]
 
 # settings = get_settings()
 
-# client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGODB_URL"))
+client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGODB_URL"))
 # client = motor.motor_asyncio.AsyncIOMotorClient(settings.MONGODB_URL)
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://mongoadmin:secret@localhost:27017/")
+# client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://mongoadmin:secret@localhost:27017/")
 db = client["imteste"]
 
 
