@@ -1,5 +1,6 @@
 import hashlib
 from http import HTTPStatus
+import re
 from bson import ObjectId
 from fastapi import APIRouter, Body, Depends, Form, HTTPException, Security
 from pymongo import ReturnDocument
@@ -42,6 +43,13 @@ refresh_security = JwtRefreshBearer(
 @router.post("/login",
              response_model_by_alias=False)
 async def login(email: str = Body(...), password: str = Body(...)):
+    passwordRegex = r"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+    emailRegex = r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+    if(not re.match(emailRegex, email)):
+        raise HTTPException(status_code=400, detail="Email inválido")
+    if(not re.match(passwordRegex, password)):
+        raise HTTPException(status_code=400, detail="Senha inválida")
+
     password = hashlib.sha256(password.encode()).hexdigest()
     user = await users_collection.find_one({"email": email, "password": password})
     if(user is None):
@@ -60,8 +68,15 @@ async def login(email: str = Body(...), password: str = Body(...)):
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-# Refresh route to get new access token
+# Logout route
+@router.post("/logout")
+def logout(refresh_token: str = Form(...)):
+    # Blacklist refresh token
+    refresh_security.revoke_refresh_token(refresh_token)
+    return {"detail": "Logout successful"}
 
+
+# Refresh route to get new access token
 @router.post('/refresh')
 def refresh(
         credentials: JwtAuthorizationCredentials = Security(refresh_security)
