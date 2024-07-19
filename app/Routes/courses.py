@@ -85,7 +85,7 @@ async def read_course(course_id: str):
 
     course = await courses_collection.find_one({"_id": ObjectId(course_id)})
     if(course is None):
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Curso não encontrado.")
     
     return course
 
@@ -103,11 +103,11 @@ async def create_course(course: Course = Body(...)):
     
     newCourse = await courses_collection.insert_one(course.model_dump(by_alias=True, exclude=["id"]))
     if(newCourse is None):
-        raise HTTPException(status_code=404, detail="Error creating course")
+        raise HTTPException(status_code=404, detail="Erro ao criar curso.")
     
     createdCourse = await courses_collection.find_one({"_id": newCourse.inserted_id})
     if(createdCourse is None):
-        raise HTTPException(status_code=404, detail="Error finding created course")
+        raise HTTPException(status_code=404, detail="Erro ao encontrar curso criado.")
     
     return createdCourse
 
@@ -126,11 +126,11 @@ async def update_course(course_id: str, course: UpdateCourse = Body(...)):
 
     updatedCourse = await courses_collection.find_one_and_update({"_id": ObjectId(course_id)}, {"$set": course}, return_document=ReturnDocument.AFTER)
     if(updatedCourse is None):
-        raise HTTPException(status_code=404, detail="Error updating course")
+        raise HTTPException(status_code=404, detail="Erro ao atualizar curso.")
     
     updatedCourse = await courses_collection.find_one({"_id": ObjectId(course_id)})
     if(updatedCourse is None):
-        raise HTTPException(status_code=404, detail="Error finding updated course")
+        raise HTTPException(status_code=404, detail="Erro ao encontrar curso atualizado.")
     
     return updatedCourse
 
@@ -142,20 +142,20 @@ async def update_course(course_id: str, course: UpdateCourse = Body(...)):
               )
 async def patch_course(course_id: str, credentials: JwtAuthorizationCredentials = Security(access_security)):
 
-    interested_contact = {"name": credentials["name"], "email": credentials["email"]}
+    interested_contact = {"name": credentials.subject["name"], "email": credentials.subject["email"]}
     
     courseInDb = await courses_collection.find_one({"_id": ObjectId(course_id)})
     if(courseInDb is None):
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Curso não encontrado.")
     
     currentInterestedList = courseInDb.get("interested_list") or []
     if interested_contact in currentInterestedList:
-        raise HTTPException(status_code=400, detail="Contact already in interest list")
+        raise HTTPException(status_code=400, detail="Contato já está na lista de interessados.")
 
     currentInterestedList.append(interested_contact)
     updatedCourse = await courses_collection.find_one_and_update({"_id": ObjectId(course_id)}, {"$set": {"interested_list": currentInterestedList}}, return_document=ReturnDocument.AFTER)
     if(updatedCourse is None):
-        raise HTTPException(status_code=404, detail="Error updating course")
+        raise HTTPException(status_code=400, detail="Erro ao atualizar curso.")
             
     return updatedCourse
 
@@ -174,17 +174,17 @@ async def patch_course(course_id: str, interested_contact: InterestedContact = B
     
     courseInDb = await courses_collection.find_one({"_id": ObjectId(course_id)})
     if(courseInDb is None):
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Curso não encontrado.")
     
     currentInterestedList = courseInDb.get("interested_list") or []
 
     if(currentInterestedList.index(interested_contact) == -1):
-        raise HTTPException(status_code=404, detail="Contact not found in interest list")
+        raise HTTPException(status_code=404, detail="Usuário não está na lista de interessados.")
 
     currentInterestedList.remove(interested_contact)
     updatedCourse = await courses_collection.find_one_and_update({"_id": ObjectId(course_id)}, {"$set": {"interested_list": currentInterestedList}}, return_document=ReturnDocument.AFTER)
     if(updatedCourse is None):
-        raise HTTPException(status_code=404, detail="Error updating course")
+        raise HTTPException(status_code=404, detail="Erro ao atualizar curso.")
             
     return updatedCourse
 
@@ -195,8 +195,8 @@ async def delete_course(course_id: str):
 
     deleteResult = await courses_collection.delete_one({"_id": ObjectId(course_id)})
     if(deleteResult.deleted_count == 0):
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail="Curso não encontrado.")
     
-    return {"detail": f"{deleteResult.deleted_count} course(s) deleted"}
+    return {"detail": f"{deleteResult.deleted_count} curso(s) excluido(s)."}
 
     
